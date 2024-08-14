@@ -5,7 +5,6 @@ st.title('Customize your smoothie')
 from snowflake.snowpark.functions import col
 import requests
 # Write directly to the app
-st.title("Breakfast menu")
 st.write(
     """Choose the fruits you want in your custom Smoothie!
     """
