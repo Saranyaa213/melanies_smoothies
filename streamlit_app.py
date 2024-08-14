@@ -1,27 +1,31 @@
 # Import python packages
 import streamlit as st
-import pandas as pd
-st.title('Customize your smoothie')
 from snowflake.snowpark.functions import col
 import requests
+import pandas as pd
+
 # Write directly to the app
+st.title(":cup_with_straw: Customize Your Smoothie :cup_with_straw:")
 st.write(
     """Choose the fruits you want in your custom Smoothie!
-    """)
+    """
+)
+
+
 name_on_order = st.text_input("Name on Smoothie:")
 st.write("Name on your Smoothie will be:", name_on_order)
+
 cnx = st.connection("snowflake")
 session = cnx.session()
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'),col('search_on'))
-#st.dataframe(data=my_dataframe, use_container_width=True)
-#st.stop()
 
-#convert the snowpark dataframe to a pandas dataframe so we can use the LOCfunction
-pd_df=my_dataframe.to_pandas()
-st.dataframe(pd_df)
-st.stop()
-search_on=pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
+my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'),col('SEARCH_ON'))
+# st.dataframe(data=my_dataframe, use_container_width=True)
+# st.stop()
 
+# Convert the Snowpark Dataframe to a Pandas Dataframe so we can use the LOC function
+pd_df = my_dataframe.to_pandas()
+# st.dataframe(pd_df)
+# st.stop()
 
 ingredients_list = st.multiselect(
     'Choose up to 5 ingredients:', my_dataframe
@@ -31,15 +35,13 @@ ingredients_list = st.multiselect(
 if ingredients_list:
     ingredients_string = ''
 
-    for fruit_chosen in ingredients_list:
-        ingredients_string += fruit_chosen + ' '
-        
-        search_on=pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
-        st.write('The search value for ', fruit_chosen,' is ', search_on, '.')
-        
-        st.subheader(fruit_chosen + 'Nutrition Information')
-        fruityvice_response = requests.get("https://fruityvice.com/api/fruit/" + fruit_chosen)
-        fv_df=st.dataframe(data=fruityvice_response.json(), use_container_width=True)
+    for x in ingredients_list:
+        ingredients_string += x + ' '
+        search_on=pd_df.loc[pd_df['FRUIT_NAME'] == x, 'SEARCH_ON'].iloc[0]
+        # st.write('The search value for ', x,' is ', search_on, '.')
+        st.subheader(x + ' Nutrition Information')
+        fruityvice_response = requests.get("https://fruityvice.com/api/fruit/" + search_on)
+        fv_df = st.dataframe(data=fruityvice_response.json(), use_container_width=True)
 
     # st.write(ingredients_string)
 
